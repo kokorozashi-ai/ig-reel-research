@@ -1,0 +1,85 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<!--
+  ig-reel-research のウォッチリストモード自動実行用 launchd 定義テンプレート。
+
+  使い方:
+    1. このファイルをコピー:
+       cp launchd-template.plist ~/Library/LaunchAgents/com.YOURUSER.ig-watchlist.plist
+
+    2. YOUR_USERNAME を実ユーザー名に置換:
+       sed -i '' "s/YOUR_USERNAME/$(whoami)/g" ~/Library/LaunchAgents/com.YOURUSER.ig-watchlist.plist
+
+    3. ファイル名の YOURUSER も実ユーザー名に変更:
+       mv ~/Library/LaunchAgents/com.YOURUSER.ig-watchlist.plist \
+          ~/Library/LaunchAgents/com.$(whoami).ig-watchlist.plist
+
+    4. 登録:
+       launchctl load -w ~/Library/LaunchAgents/com.$(whoami).ig-watchlist.plist
+
+    5. 確認:
+       launchctl list | grep ig-watchlist
+
+  実行スケジュール:
+    毎月 1日 09:00 と 15日 09:00（2週間ごと）
+    Mac が寝てる/オフだった場合は次回 wake 時に1回だけ追っかけ実行（launchd標準）
+
+  テスト実行（手動発火）:
+    launchctl start com.$(whoami).ig-watchlist
+
+  停止:
+    launchctl unload ~/Library/LaunchAgents/com.$(whoami).ig-watchlist.plist
+
+  ログ場所:
+    /Users/YOUR_USERNAME/.cache/ig-reel-research/cron.stdout.log
+    /Users/YOUR_USERNAME/.cache/ig-reel-research/cron.stderr.log
+-->
+<plist version="1.0">
+<dict>
+    <key>Label</key>
+    <string>com.YOUR_USERNAME.ig-watchlist</string>
+
+    <key>ProgramArguments</key>
+    <array>
+        <string>/bin/zsh</string>
+        <string>-lic</string>
+        <string>cd ~/.claude/skills/ig-reel-research/scripts &amp;&amp; python3 -u run_watchlist_research.py --period 2w</string>
+    </array>
+
+    <key>StartCalendarInterval</key>
+    <array>
+        <dict>
+            <key>Day</key>
+            <integer>1</integer>
+            <key>Hour</key>
+            <integer>9</integer>
+            <key>Minute</key>
+            <integer>0</integer>
+        </dict>
+        <dict>
+            <key>Day</key>
+            <integer>15</integer>
+            <key>Hour</key>
+            <integer>9</integer>
+            <key>Minute</key>
+            <integer>0</integer>
+        </dict>
+    </array>
+
+    <!-- ロード時には実行しない（指定日時のみ） -->
+    <key>RunAtLoad</key>
+    <false/>
+
+    <!-- ログ出力 -->
+    <key>StandardOutPath</key>
+    <string>/Users/YOUR_USERNAME/.cache/ig-reel-research/cron.stdout.log</string>
+    <key>StandardErrorPath</key>
+    <string>/Users/YOUR_USERNAME/.cache/ig-reel-research/cron.stderr.log</string>
+
+    <key>WorkingDirectory</key>
+    <string>/Users/YOUR_USERNAME</string>
+
+    <key>AbandonProcessGroup</key>
+    <false/>
+</dict>
+</plist>
