@@ -1,0 +1,26 @@
+# GitHub Pages（Jekyll）設定
+# 参考: https://docs.github.com/en/pages/setting-up-a-github-pages-site-with-jekyll
+
+title: "Instagram リール バズリサーチ スキル"
+description: "Claude Code 拡張用スキル。Apify でリール収集 → Whisper で音声文字起こし → OpenAI で分析 → Google スプレッドシートに出力"
+theme: jekyll-theme-cayman
+
+# トップヘッダーのリンクボタン
+show_downloads: true
+
+# Markdown処理設定
+markdown: kramdown
+kramdown:
+  input: GFM        # GitHub Flavored Markdown 互換
+  hard_wrap: false
+
+# Jekyll の処理から除外するもの
+exclude:
+  - scripts/__pycache__
+  - scripts/output
+  - .DS_Store
+  - "*.zip"
+  - launchd-template.plist  # ファイル単体閲覧不要
+
+# 言語設定（日本語ページ）
+lang: ja
