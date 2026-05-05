@@ -1,0 +1,52 @@
+---
+---
+
+@import "{{ site.theme }}";
+
+/* =====================================================
+   コーポレート系セルリアンブルー（カスタマイズ）
+   ===================================================== */
+
+/* ファーストビューのグラデーション */
+.page-header {
+  background-color: #075985;
+  background-image: linear-gradient(120deg, #0284c7, #075985);
+}
+
+/* 見出しの色を青系で統一 */
+.main-content h1 {
+  color: #075985;
+  border-bottom: 2px solid #bae6fd;
+  padding-bottom: 0.3rem;
+}
+
+.main-content h2 {
+  color: #075985;
+  border-bottom: 1px solid #bae6fd;
+  padding-bottom: 0.2rem;
+}
+
+.main-content h3 {
+  color: #0284c7;
+}
+
+.main-content h4 {
+  color: #0369a1;
+}
+
+/* リンク色も統一（テーマ既定が浮かないように軽く調整） */
+.main-content a {
+  color: #0284c7;
+}
+
+.main-content a:hover {
+  color: #075985;
+}
+
+/* テーブルのヘッダー行を青系に */
+.main-content table th {
+  background-color: #e0f2fe;
+  color: #075985;
+}
+
+/* コードブロックは既定のまま（読みやすさ優先） */
