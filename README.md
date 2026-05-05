@@ -113,12 +113,3 @@ ig-reel-research/
     └── gsheets.py                   # スプレッドシート連携
 ```
 
-## 困った時は
-
-- 質問・相談：[GitHub の困りごと相談所](https://github.com/kokorozashi-ai/ig-reel-research/issues)
-- 改善提案も歓迎：[こちら](https://github.com/kokorozashi-ai/ig-reel-research/pulls)
-- よくあるトラブル：[運用ガイド](運用ガイド.md) の「困った時は」セクション
-
-## ライセンス
-
-[MIT ライセンス](LICENSE) — 自由に使ってください。改変・商用利用OK。改善提案も歓迎します。
