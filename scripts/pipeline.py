@@ -295,6 +295,45 @@ def _parse_date(raw):
     return None
 
 
+def _format_music_info(reel) -> str:
+    """Apify の musicInfo / music / audio フィールドを人間可読な形式に整形。
+
+    Apify の戻り値は actor によって形式が異なる:
+      - dict: {"audio_title": "...", "artist_name": "...", "song_id": "..."}
+      - dict: {"original_audio_title": "...", "musical_instrument_or_band": "..."}
+      - str: 単純な曲名文字列
+      - None / 空: 音声なし or 取得失敗
+
+    Returns: 「曲名: XXX / アーティスト: YYY」形式 or 「不明」
+    """
+    raw = _extract(reel, ['musicInfo', 'audioTitle', 'music', 'audio'], '')
+    if not raw:
+        return ''
+    if isinstance(raw, str):
+        return raw.strip() or ''
+    if isinstance(raw, dict):
+        title = (
+            raw.get('audio_title') or raw.get('original_audio_title')
+            or raw.get('title') or raw.get('songName') or ''
+        )
+        artist = (
+            raw.get('artist_name') or raw.get('artistName')
+            or raw.get('artist') or raw.get('display_artist') or ''
+        )
+        title = str(title or '').strip()
+        artist = str(artist or '').strip()
+        parts = []
+        if title:
+            parts.append(f'曲名: {title}')
+        if artist:
+            parts.append(f'アーティスト: {artist}')
+        if parts:
+            return ' / '.join(parts)
+        # フィールド名が分からない dict の場合は全部 join
+        return ' / '.join(f'{k}: {v}' for k, v in raw.items() if v and str(v).strip())[:300]
+    return str(raw)[:300]
+
+
 def _enrich_reel(reel):
     src = reel.get("_ig_reel_source") if isinstance(reel, dict) else None
     if src not in (REEL_SOURCE_KEYWORD, REEL_SOURCE_WATCHLIST):
@@ -320,7 +359,7 @@ def _enrich_reel(reel):
         'posted_datetime': posted,
         'caption': _extract(reel, ['caption','text','description'], ''),
         'hashtags': _extract(reel, ['hashtags','tags'], []),
-        'music': str(_extract(reel, ['musicInfo','audioTitle','music','audio'], '')),
+        'music': _format_music_info(reel),
         'duration': _extract(reel, ['videoDuration','duration','video_duration'], ''),
         'buzz_ratio': round(views / followers, 1) if followers > 0 else 0,
         'engagement_rate': round((likes + comments) / views * 100, 2) if views > 0 else 0,

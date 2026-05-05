@@ -59,9 +59,17 @@ ATTRIBUTE_LABELS: List[str] = [
     'キャプション全文',
     'バズ仮説',
     '改善提案',
+    # ── 動画コンテンツ分析（v2追加）──
+    'BGM',
+    '動画カット数',
+    'シーン構成',
+    'テロップOCR',
 ]
-NUMERIC_LABELS = {'フォロワー数', '再生回数', 'いいね数', 'コメント数'}
-LONG_TEXT_LABELS = {'全文文字起こし', 'キャプション全文', 'バズ仮説', '改善提案', 'フック', 'ハッシュタグ'}
+NUMERIC_LABELS = {'フォロワー数', '再生回数', 'いいね数', 'コメント数', '動画カット数'}
+LONG_TEXT_LABELS = {
+    '全文文字起こし', 'キャプション全文', 'バズ仮説', '改善提案',
+    'フック', 'ハッシュタグ', 'シーン構成', 'テロップOCR',
+}
 
 
 # ====================================================================
@@ -732,6 +740,39 @@ def create_snapshot_sheet(
         hypothesis = ins.get('hypothesis') or ''
         improvement = ins.get('improvement') or ''
 
+        # ─ v2追加：BGM・カット数・シーン構成・テロップOCR ─
+        bgm = (reel.get('music') or '').strip() or '不明 / 取得不可'
+        cut_count_val = reel.get('cut_count')
+        if cut_count_val is None or cut_count_val <= 0:
+            cut_count_str = '不明'
+        else:
+            try:
+                duration_sec = int(float(str(duration).strip())) if duration else 0
+            except (ValueError, TypeError):
+                duration_sec = 0
+            avg_interval = (duration_sec / cut_count_val) if (duration_sec > 0 and cut_count_val > 0) else 0
+            cut_count_str = (
+                f"{cut_count_val}カット"
+                + (f"（平均{avg_interval:.1f}秒/カット）" if avg_interval > 0 else "")
+            )
+
+        scene_breakdown = reel.get('scene_breakdown') or []
+        if scene_breakdown:
+            scene_lines = []
+            for s in scene_breakdown:
+                start = s.get('start', 0)
+                end = s.get('end', 0)
+                desc = (s.get('description') or '').strip()
+                if desc:
+                    scene_lines.append(f'{start:.1f}-{end:.1f}秒: {desc}')
+                else:
+                    scene_lines.append(f'{start:.1f}-{end:.1f}秒: （記述なし）')
+            scene_str = '\n'.join(scene_lines)
+        else:
+            scene_str = ''
+
+        telop_full = (reel.get('telop_full') or '').strip()
+
         col_values: Dict[str, Any] = {
             'リールURL': _hyperlink_formula(url, label=url) if url else '',
             'アカウント名': _hyperlink_username_formula(username) if username else '',
@@ -749,6 +790,11 @@ def create_snapshot_sheet(
             'キャプション全文': caption,
             'バズ仮説': hypothesis,
             '改善提案': improvement,
+            # v2追加
+            'BGM': bgm,
+            '動画カット数': cut_count_str,
+            'シーン構成': scene_str,
+            'テロップOCR': telop_full,
         }
         for j, lab in enumerate(ATTRIBUTE_LABELS):
             matrix[DATA_START_ROW - 1 + j][col - 1] = col_values.get(lab, '')
